@@ -63,6 +63,7 @@ A compact single row:
 ## Changes to existing modes
 
 - **Winning-line highlight applies to all modes** ("vs computer" and "two players" as well). `winner()` needs to expose which line won, e.g. by returning `{ who, line }` or adding a helper, and `render()` adds a class (such as `.cell.win`) to those three cells.
+- **Keyboard shortcut (all modes):** the number keys **1–9** place a mark while a board is on screen. 1 is the top-left square and 9 the bottom-right, read left to right, top to bottom (`1 2 3 / 4 5 6 / 7 8 9`). A key for a taken square, a finished game, or the computer's turn does nothing. Keys combined with Ctrl/Cmd/Alt are ignored.
 - Otherwise the existing modes are unchanged.
 
 ## Implementation notes
