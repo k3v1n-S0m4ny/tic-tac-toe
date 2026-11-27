@@ -5,26 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tic-tac-toe</title>
 <style>
-  :root { --bg: #1d2433; --card: #283147; --ink: #f2f4f8; --muted: #9aa4b8; --x: #ff7a59; --o: #4fc3f7; }
+  /* "Midnight Jazz Club": plum night, hot-pink X, electric-teal O, sunflower brass */
+  :root {
+    --bg: #1a0f2e; --card: #2b1747; --well: #200f38; --line: #4a2a70;
+    --ink: #fff4e6; --muted: #c3a8e0; --on-color: #2b1240;
+    --x: #ff3d8b; --o: #2de2c8; --accent: #ffc93c;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font: 18px/1.4 system-ui, sans-serif; }
-  .card { background: var(--card); padding: 32px 40px; border-radius: 20px; width: 380px; text-align: center; }
-  h1 { margin: 0 0 20px; font-size: 32px; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at 15% 20%, rgba(255, 61, 139, .22), transparent 40%), radial-gradient(circle at 85% 80%, rgba(45, 226, 200, .18), transparent 45%), radial-gradient(circle at 80% 15%, rgba(255, 201, 60, .14), transparent 30%), var(--bg); color: var(--ink); font: 18px/1.4 system-ui, sans-serif; }
+  .card { background: var(--card); padding: 32px 40px; border-radius: 20px; width: 380px; text-align: center; border: 2px solid var(--line); box-shadow: 8px 8px 0 var(--x), -8px -8px 0 var(--o); }
+  h1 { margin: 0 0 20px; font-size: 32px; letter-spacing: .02em; color: var(--accent); text-shadow: 3px 3px 0 var(--x); }
+  .modes input { accent-color: var(--accent); }
   .modes { text-align: left; margin: 0 0 24px; display: grid; gap: 10px; }
   .modes label { display: flex; gap: 10px; align-items: center; cursor: pointer; }
-  button { font: inherit; border: 0; border-radius: 12px; padding: 12px 28px; background: var(--o); color: #10202c; font-weight: 600; cursor: pointer; }
+  button { font: inherit; border: 0; border-radius: 12px; padding: 12px 28px; background: var(--accent); color: var(--on-color); font-weight: 700; cursor: pointer; box-shadow: 0 4px 0 #c98f00; }
+  button:active { transform: translateY(2px); box-shadow: 0 2px 0 #c98f00; }
   .board { display: grid; grid-template-columns: repeat(3, 90px); gap: 8px; justify-content: center; margin: 0 0 20px; }
-  .cell { width: 90px; height: 90px; border-radius: 12px; background: #1a2030; font-size: 48px; font-weight: 700; padding: 0; color: var(--ink); }
-  .cell.x { color: var(--x); }
-  .cell.o { color: var(--o); }
-  .cell.win { background: #3a4560; box-shadow: inset 0 0 0 3px currentColor; }
+  .cell { width: 90px; height: 90px; border-radius: 12px; background: var(--well); border: 2px solid var(--line); box-shadow: none; font-size: 48px; font-weight: 700; padding: 0; color: var(--ink); }
+  .cell:active { transform: none; }
+  .cell.x { color: var(--x); text-shadow: 0 0 14px rgba(255, 61, 139, .7); }
+  .cell.o { color: var(--o); text-shadow: 0 0 14px rgba(45, 226, 200, .7); }
+  .cell.win { background: var(--line); border-color: currentColor; box-shadow: 0 0 18px currentColor, inset 0 0 12px currentColor; }
   .status { min-height: 28px; margin: 0 0 16px; color: var(--muted); }
   [hidden] { display: none !important; }
 
   /* Tournament */
   .names { display: grid; gap: 10px; margin: 0; text-align: left; }
   .names label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
-  .names input { font: inherit; color: var(--ink); background: #1a2030; border: 1px solid #3a4560; border-radius: 10px; padding: 8px 12px; width: 100%; }
+  .names input { font: inherit; color: var(--ink); background: var(--well); border: 2px solid var(--line); border-radius: 10px; padding: 8px 12px; width: 100%; }
+  .names input:focus { outline: none; border-color: var(--accent); }
   .names button { justify-self: center; margin-top: 14px; }
   .name { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
   .inline-name { max-width: 9em; }
@@ -33,24 +42,24 @@
   .side-name { min-width: 0; padding: 2px 6px; border-radius: 8px; border-bottom: 3px solid transparent; }
   .score-row .side-name:first-child { text-align: right; }
   .score-row .side-name:last-child { text-align: left; }
-  .side-name.turn { background: #1a2030; border-bottom-color: var(--ink); font-weight: 700; }
-  .badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 700; font-size: 15px; color: #10202c; }
+  .side-name.turn { background: var(--well); border-bottom-color: var(--accent); font-weight: 700; }
+  .badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 700; font-size: 15px; color: var(--on-color); }
   .badge.x { background: var(--x); }
   .badge.o { background: var(--o); }
-  .wins { font-size: 22px; font-weight: 700; min-width: 1ch; }
+  .wins { font-size: 22px; font-weight: 700; min-width: 1ch; color: var(--accent); }
   .dash { color: var(--muted); }
   .score-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
   .intro { margin: 8px 0 20px; }
   .intro .game-label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
   .end-title { font-size: 22px; font-weight: 700; margin: 0 0 16px; }
-  .link { background: none; color: var(--muted); padding: 6px 10px; font-weight: 400; text-decoration: underline; }
+  .link { background: none; box-shadow: none; color: var(--muted); padding: 6px 10px; font-weight: 400; text-decoration: underline; }
   .end-actions { display: grid; gap: 8px; justify-items: center; }
   .quit-area { margin-top: 16px; }
-  .quit-confirm { background: #1a2030; border-radius: 12px; padding: 12px; }
+  .quit-confirm { background: var(--well); border: 2px solid var(--line); border-radius: 12px; padding: 12px; }
   .quit-confirm p { margin: 0 0 10px; }
   .quit-confirm button { padding: 8px 20px; margin: 0 4px; }
-  .quit-confirm .danger { background: var(--x); }
-  .quit-confirm .secondary { background: #3a4560; color: var(--ink); }
+  .quit-confirm .danger { background: var(--x); box-shadow: 0 4px 0 #b3195c; }
+  .quit-confirm .secondary { background: var(--line); color: var(--ink); box-shadow: 0 4px 0 #2a1445; }
 </style>
 </head>
 <body>
