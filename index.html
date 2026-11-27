@@ -360,7 +360,7 @@
 
   // Number keys 1-9 place a mark: 1 is top-left, 9 is bottom-right.
   document.addEventListener('keydown', (e) => {
-    if (game.hidden || e.ctrlKey || e.metaKey || e.altKey || !/^[1-9]$/.test(e.key)) return;
+    if (game.hidden || !quitConfirm.hidden || e.ctrlKey || e.metaKey || e.altKey || !/^[1-9]$/.test(e.key)) return;
     move(Number(e.key) - 1); // move() ignores taken squares and finished games
   });
 </script>
