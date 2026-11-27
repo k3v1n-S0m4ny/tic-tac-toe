@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic-tac-toe</title>
+<style>
+  :root { --bg: #1d2433; --card: #283147; --ink: #f2f4f8; --muted: #9aa4b8; --x: #ff7a59; --o: #4fc3f7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font: 18px/1.4 system-ui, sans-serif; }
+  .card { background: var(--card); padding: 32px 40px; border-radius: 20px; width: 380px; text-align: center; }
+  h1 { margin: 0 0 20px; font-size: 32px; }
+  .modes { text-align: left; margin: 0 0 24px; display: grid; gap: 10px; }
+  .modes label { display: flex; gap: 10px; align-items: center; cursor: pointer; }
+  button { font: inherit; border: 0; border-radius: 12px; padding: 12px 28px; background: var(--o); color: #10202c; font-weight: 600; cursor: pointer; }
+  .board { display: grid; grid-template-columns: repeat(3, 90px); gap: 8px; justify-content: center; margin: 0 0 20px; }
+  .cell { width: 90px; height: 90px; border-radius: 12px; background: #1a2030; font-size: 48px; font-weight: 700; padding: 0; color: var(--ink); }
+  .cell.x { color: var(--x); }
+  .cell.o { color: var(--o); }
+  .cell.win { background: #3a4560; box-shadow: inset 0 0 0 3px currentColor; }
+  .status { min-height: 28px; margin: 0 0 16px; color: var(--muted); }
+  [hidden] { display: none !important; }
+
+  /* Tournament */
+  .names { display: grid; gap: 10px; margin: 0; text-align: left; }
+  .names label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+  .names input { font: inherit; color: var(--ink); background: #1a2030; border: 1px solid #3a4560; border-radius: 10px; padding: 8px 12px; width: 100%; }
+  .names button { justify-self: center; margin-top: 14px; }
+  .name { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+  .inline-name { max-width: 9em; }
+  .scoreboard { margin: 0 0 16px; }
+  .score-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr); gap: 8px; align-items: center; font-size: 16px; }
+  .side-name { min-width: 0; padding: 2px 6px; border-radius: 8px; border-bottom: 3px solid transparent; }
+  .score-row .side-name:first-child { text-align: right; }
+  .score-row .side-name:last-child { text-align: left; }
+  .side-name.turn { background: #1a2030; border-bottom-color: var(--ink); font-weight: 700; }
+  .badge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 700; font-size: 15px; color: #10202c; }
+  .badge.x { background: var(--x); }
+  .badge.o { background: var(--o); }
+  .wins { font-size: 22px; font-weight: 700; min-width: 1ch; }
+  .dash { color: var(--muted); }
+  .score-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .intro { margin: 8px 0 20px; }
+  .intro .game-label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+  .end-title { font-size: 22px; font-weight: 700; margin: 0 0 16px; }
+  .link { background: none; color: var(--muted); padding: 6px 10px; font-weight: 400; text-decoration: underline; }
+  .end-actions { display: grid; gap: 8px; justify-items: center; }
+  .quit-area { margin-top: 16px; }
+  .quit-confirm { background: #1a2030; border-radius: 12px; padding: 12px; }
+  .quit-confirm p { margin: 0 0 10px; }
+  .quit-confirm button { padding: 8px 20px; margin: 0 4px; }
+  .quit-confirm .danger { background: var(--x); }
+  .quit-confirm .secondary { background: #3a4560; color: var(--ink); }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>Tic-tac-toe</h1>
+
+  <section id="menu">
+    <div class="modes">
+      <label><input type="radio" name="mode" value="computer" checked> Against the computer</label>
+      <label><input type="radio" name="mode" value="local"> Two players, one screen</label>
+      <label><input type="radio" name="mode" value="tournament"> Tournament (two players)</label>
+    </div>
+    <button id="play">Play</button>
+    <form id="names" class="names" hidden>
+      <label>Player 1 <input id="name1" type="text" placeholder="Player 1" autocomplete="off"></label>
+      <label>Player 2 <input id="name2" type="text" placeholder="Player 2" autocomplete="off"></label>
+      <button type="submit">Start</button>
+    </form>
+  </section>
+
+  <div id="scoreboard" class="scoreboard" hidden>
+    <div class="score-row">
+      <span class="side-name" id="sb-name0"><span class="name"></span></span>
+      <span class="badge" id="sb-badge0"></span>
+      <span class="wins" id="sb-wins0"></span>
+      <span class="dash">—</span>
+      <span class="wins" id="sb-wins1"></span>
+      <span class="badge" id="sb-badge1"></span>
+      <span class="side-name" id="sb-name1"><span class="name"></span></span>
+    </div>
+    <div class="score-meta" id="sb-meta"></div>
+  </div>
+
+  <section id="interstitial" hidden>
+    <p class="intro" id="intro"></p>
+    <button id="continue">Continue</button>
+  </section>
+
+  <section id="game" hidden>
+    <p class="status" id="status"></p>
+    <div class="board" id="board"></div>
+    <button id="again">Play again</button>
+    <button id="next" hidden>Next game</button>
+  </section>
+
+  <section id="end" hidden>
+    <p class="end-title" id="end-title"></p>
+    <div class="end-actions">
+      <button id="rematch">Rematch</button>
+      <button id="back" class="link">Back to menu</button>
+    </div>
+  </section>
+
+  <div id="quit-area" class="quit-area" hidden>
+    <button id="quit" class="link">Quit tournament</button>
+    <div id="quit-confirm" class="quit-confirm" hidden>
+      <p>Quit? The score will be lost.</p>
+      <button id="quit-yes" class="danger">Quit</button>
+      <button id="quit-no" class="secondary">Cancel</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const $ = (id) => document.getElementById(id);
+  const menu = $('menu');
+  const game = $('game');
+  const boardEl = $('board');
+  const statusEl = $('status');
+  const namesForm = $('names');
+  const playBtn = $('play');
+  const againBtn = $('again');
+  const nextBtn = $('next');
+  const scoreboard = $('scoreboard');
+  const interstitial = $('interstitial');
+  const endEl = $('end');
+  const quitArea = $('quit-area');
+  const quitBtn = $('quit');
+  const quitConfirm = $('quit-confirm');
+  let cells, turn, mode, over;
+  let tour = null; // { names: [p1, p2], wins: [0, 0], gameNumber, starter: 0|1 }
+  const WINS_NEEDED = 3;
+
+  function winLine(b) {
+    for (const line of LINES) {
+      const [a, c, d] = line;
+      if (b[a] && b[a] === b[c] && b[a] === b[d]) return line;
+    }
+    return null;
+  }
+
+  function winner(b) {
+    const line = winLine(b);
+    if (line) return b[line[0]];
+    return b.every(Boolean) ? 'draw' : null;
+  }
+
+  // Tournament helpers: X is played by `starter`, O by the other player.
+  const playerFor = (sym) => (sym === 'X' ? tour.starter : 1 - tour.starter);
+  const symbolFor = (idx) => (idx === tour.starter ? 'X' : 'O');
+
+  function nameEl(idx, extraClass) {
+    const s = document.createElement('span');
+    s.className = 'name' + (extraClass ? ' ' + extraClass : '');
+    s.textContent = tour.names[idx];
+    s.title = tour.names[idx];
+    return s;
+  }
+
+  // Fill an element from a list of strings and nodes.
+  function fill(el, parts) {
+    el.replaceChildren(...parts.map((p) => (typeof p === 'string' ? document.createTextNode(p) : p)));
+  }
+
+  function renderScoreboard(toMove) {
+    for (const idx of [0, 1]) {
+      const sym = symbolFor(idx);
+      const side = $('sb-name' + idx);
+      const n = side.firstElementChild;
+      n.textContent = tour.names[idx];
+      n.title = tour.names[idx];
+      side.classList.toggle('turn', toMove === idx);
+      const badge = $('sb-badge' + idx);
+      badge.textContent = sym;
+      badge.className = 'badge ' + sym.toLowerCase();
+      $('sb-wins' + idx).textContent = tour.wins[idx];
+    }
+    $('sb-meta').textContent = `Game ${tour.gameNumber} · first to ${WINS_NEEDED}`;
+  }
+
+  function render() {
+    boardEl.innerHTML = '';
+    const line = winLine(cells) || [];
+    cells.forEach((v, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'cell' + (v ? ' ' + v.toLowerCase() : '') + (line.includes(i) ? ' win' : '');
+      btn.textContent = v || '';
+      btn.addEventListener('click', () => move(i));
+      boardEl.appendChild(btn);
+    });
+    const w = winner(cells);
+    if (mode === 'tournament') return renderTournamentStatus(w);
+    if (w === 'draw') statusEl.textContent = "It's a draw.";
+    else if (w) statusEl.textContent = mode === 'computer' ? (w === 'X' ? 'You win!' : 'The computer wins.') : `${w} wins!`;
+    else statusEl.textContent = mode === 'computer' ? (turn === 'X' ? 'Your turn (X)' : 'Computer is thinking...') : `${turn} to play`;
+  }
+
+  function renderTournamentStatus(w) {
+    if (!w) {
+      const p = playerFor(turn);
+      renderScoreboard(p);
+      fill(statusEl, [nameEl(p, 'inline-name'), ` (${turn}) to play`]);
+    } else if (w === 'draw') {
+      renderScoreboard(null);
+      fill(statusEl, ['Draw — replaying']);
+    } else {
+      renderScoreboard(null);
+      fill(statusEl, [nameEl(playerFor(w), 'inline-name'), ` wins game ${tour.gameNumber}`]);
+    }
+  }
+
+  function move(i) {
+    if (over || cells[i] || (mode === 'computer' && turn === 'O')) return;
+    place(i);
+    if (!over && mode === 'computer') setTimeout(computerMove, 400);
+  }
+
+  function place(i) {
+    cells[i] = turn;
+    turn = turn === 'X' ? 'O' : 'X';
+    over = Boolean(winner(cells));
+    if (over && mode === 'tournament') finishTournamentGame();
+    render();
+  }
+
+  function computerMove() {
+    if (mode !== 'computer' || over) return;
+    const free = cells.map((v, i) => (v ? null : i)).filter((i) => i !== null);
+    for (const who of ['O', 'X']) {
+      for (const i of free) {
+        const test = cells.slice();
+        test[i] = who;
+        if (winner(test) === who) return place(i);
+      }
+    }
+    if (free.includes(4)) return place(4);
+    place(free[Math.floor(Math.random() * free.length)]);
+  }
+
+  function resetBoard() {
+    cells = Array(9).fill(null);
+    turn = 'X';
+    over = false;
+  }
+
+  function showOnly(...sections) {
+    for (const s of [menu, game, scoreboard, interstitial, endEl, quitArea]) s.hidden = !sections.includes(s);
+    quitConfirm.hidden = true;
+    quitBtn.hidden = false;
+  }
+
+  function start() {
+    mode = document.querySelector('input[name="mode"]:checked').value;
+    resetBoard();
+    againBtn.hidden = false;
+    nextBtn.hidden = true;
+    showOnly(game);
+    render();
+  }
+
+  function showMenu() {
+    tour = null;
+    mode = null;
+    showOnly(menu);
+  }
+
+  // ----- Tournament flow -----
+
+  function startTournament(names, starter) {
+    tour = { names, wins: [0, 0], gameNumber: 1, starter };
+    mode = 'tournament';
+    showInterstitial();
+  }
+
+  function showInterstitial() {
+    renderScoreboard(tour.starter);
+    fill($('intro'), [
+      Object.assign(document.createElement('span'), { className: 'game-label', textContent: `Game ${tour.gameNumber}` }),
+      nameEl(tour.starter, 'inline-name'),
+      ' plays X and goes first',
+    ]);
+    showOnly(scoreboard, interstitial, quitArea);
+  }
+
+  function playTournamentGame() {
+    resetBoard();
+    againBtn.hidden = true;
+    nextBtn.hidden = true;
+    showOnly(scoreboard, game, quitArea);
+    render();
+  }
+
+  // Called once when a tournament game ends, before render().
+  function finishTournamentGame() {
+    const w = winner(cells);
+    if (w !== 'draw') tour.wins[playerFor(w)] += 1;
+    const champ = tour.wins.findIndex((n) => n >= WINS_NEEDED);
+    if (champ !== -1) {
+      const loser = 1 - champ;
+      fill($('end-title'), [nameEl(champ), ` wins the tournament ${tour.wins[champ]}–${tour.wins[loser]}`]);
+      // Keep the final board visible above the end screen.
+      showOnly(scoreboard, game, endEl);
+      againBtn.hidden = true;
+      nextBtn.hidden = true;
+      tour.loser = loser;
+    } else {
+      nextBtn.hidden = false;
+    }
+  }
+
+  function nextGame() {
+    tour.starter = 1 - tour.starter; // flips after every game, decisive or drawn
+    tour.gameNumber += 1;
+    showInterstitial();
+  }
+
+  function rematch() {
+    startTournament(tour.names.slice(), tour.loser);
+  }
+
+  // ----- Wiring -----
+
+  function syncMenu() {
+    const isTour = document.querySelector('input[name="mode"]:checked').value === 'tournament';
+    namesForm.hidden = !isTour;
+    playBtn.hidden = isTour;
+  }
+  document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', syncMenu));
+  syncMenu();
+
+  namesForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const n1 = $('name1').value.trim() || 'Player 1';
+    const n2 = $('name2').value.trim() || 'Player 2';
+    startTournament([n1, n2], 0);
+  });
+
+  playBtn.addEventListener('click', start);
+  againBtn.addEventListener('click', showMenu);
+  nextBtn.addEventListener('click', nextGame);
+  $('continue').addEventListener('click', playTournamentGame);
+  $('rematch').addEventListener('click', rematch);
+  $('back').addEventListener('click', showMenu);
+  quitBtn.addEventListener('click', () => { quitConfirm.hidden = false; quitBtn.hidden = true; });
+  $('quit-no').addEventListener('click', () => { quitConfirm.hidden = true; quitBtn.hidden = false; });
+  $('quit-yes').addEventListener('click', showMenu);
+</script>
+</body>
+</html>
