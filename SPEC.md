@@ -38,7 +38,7 @@ A compact single row:
       Game 4 · first to 3
 ```
 
-- **Fixed sides:** Player 1 is always on the left and Player 2 always on the right. Only the X/O badge and its colour (`--x` orange / `--o` blue) swap between games.
+- **Fixed sides:** Player 1 is always on the left and Player 2 always on the right. Only the X/O badge and its colour (`--x` hot pink / `--o` teal) swap between games.
 - Each side shows the name, this game's symbol badge in that symbol's colour, and the win count.
 - The player whose turn it is gets highlighted.
 - **"Game N" counts every game played, draws included.** "Game 7" is possible and expected.
